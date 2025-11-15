@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socialhub – Private Beta</title>
+
+    <!-- three.js libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+
+    <style>
+        /* Link Google Font */
+        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            text-align: center;
+            /* Remove background from body, it's now on the globe container */
+            background-color: transparent;
+        }
+        /* This div will hold the three.js canvas */
+        
+        #globe-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            /* In front of text, behind content */
+            /* Fallback background color */
+            background: #0a0018;
+            overflow: hidden;
+        }
+        /* NEW: Faint background text */
+        
+        .background-text {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15vw;
+            /* Large and responsive */
+            font-weight: 800;
+            /* Bold */
+            color: #ffffff;
+            opacity: 0.05;
+            /* Very faint */
+            z-index: 2;
+            /* Behind the globe */
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            /* Ensure it doesn't intercept mouse events */
+            pointer-events: none;
+        }
+        /* Ensure original content appears on top of the background */
+        
+        .container {
+            max-width: 700px;
+            margin: auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+            /* Add a very-subtle backdrop for readability */
+            background-color: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(2px);
+            border-radius: 12px;
+            margin-top: 5vh;
+        }
+        
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 18px;
+            opacity: 0.85;
+            margin-bottom: 30px;
+        }
+        
+        .cta-btn {
+            padding: 16px 28px;
+            border-radius: 10px;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        
+        .primary {
+            background: #b044ff;
+            color: white;
+        }
+        
+        .primary:hover {
+            background: #8a20e6;
+        }
+        
+        .secondary {
+            background: transparent;
+            border: 2px solid #b044ff;
+            color: #b044ff;
+        }
+        
+        .secondary:hover {
+            background: #b044ff;
+            color: #fff;
+        }
+        
+        .trust {
+            margin-top: 30px;
+            opacity: 0.7;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NEW: Faint background text -->
+    <div class="background-text">socialhub</div>
+
+    <!-- This div is the target for the three.js animation -->
+    <div id="globe-bg"></div>
+
+    <!-- This is your original content -->
+    <div class="container">
+        <h1>The World's First AI-Powered Social Network That Truly Protects You</h1>
+        <p>
+            End-to-end encrypted. Zero unknown links. Scam-proof messaging. And an AI Twin that preserves your digital legacy forever.
+        </p>
+
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdDHIGIXVSjE_ARj59ijpDEhIM14Mv5aHVyRDJpq36XDkJklA/viewform?usp=dialog" target="_blank">
+            <button class="cta-btn primary">Join Private Beta — 200 Seats</button>
+        </a>
+
+        <div class="trust">
+            ✔ End-to-end encrypted chats <br> ✔ AI safety shield blocks scam links <br> ✔ Digital Twin learns your personality <br> ✔ We can’t access your messages — ever
+        </div>
+    </div>
+
+    <!-- Globe and Stars Animation Script -->
+    <script>
+        // Get the container
+        const container = document.getElementById('globe-bg');
+        let width = container.clientWidth;
+        let height = container.clientHeight;
+
+        // --- Scene Setup ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        // Pull camera back to see the whole globe
+        camera.position.set(0, 0, 4.5);
+        camera.lookAt(scene.position);
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true
+        });
+        renderer.setSize(width, height);
+        // Set renderer to be transparent
+        renderer.setClearColor(0x000000, 0);
+        container.appendChild(renderer.domElement);
+
+        // --- Lighting ---
+        // Soft ambient light
+        scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+        // Directional light for highlights
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(5, 3, 5);
+        scene.add(dirLight);
+
+        // --- Globe ---
+        const radius = 1.0;
+        const globeGeo = new THREE.SphereGeometry(radius, 64, 64);
+        // Material from your LoginRegister file
+        const globeMat = new THREE.MeshPhysicalMaterial({
+            color: 0x28104E,
+            metalness: 0.5,
+            roughness: 0.4,
+            emissive: 0x5D3FD3,
+            emissiveIntensity: 0.12,
+            transparent: true,
+            opacity: 0.9
+        });
+        const globe = new THREE.Mesh(globeGeo, globeMat);
+        globe.rotation.x = 0.4;
+        globe.rotation.z = -0.2;
+        scene.add(globe);
+
+        // --- Borders ---
+        fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+            .then(res => res.json())
+            .then(worldData => {
+                const countries = topojson.feature(worldData, worldData.objects.countries);
+                countries.features.forEach(f => {
+                    const drawPolygon = (poly) => {
+                        const pts = poly.map(([lon, lat]) => latLonToVec3(lat, lon));
+                        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+                        // Make borders slightly more subtle
+                        const mat = new THREE.LineBasicMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0.6
+                        });
+                        const line = new THREE.LineLoop(geo, mat);
+                        globe.add(line);
+                    };
+                    if (f.geometry.type === 'Polygon') drawPolygon(f.geometry.coordinates[0]);
+                    else if (f.geometry.type === 'MultiPolygon') f.geometry.coordinates.forEach(p => drawPolygon(p[0]));
+                });
+            });
+
+        // --- Lat/Lon helper ---
+        function latLonToVec3(lat, lon, r = radius) {
+            const phi = (90 - lat) * Math.PI / 180;
+            const theta = (lon + 180) * Math.PI / 180;
+            return new THREE.Vector3(-r * Math.sin(phi) * Math.cos(theta),
+                r * Math.cos(phi),
+                r * Math.sin(phi) * Math.sin(theta)
+            );
+        }
+
+        // --- Network Data ---
+        const origin = latLonToVec3(20.5937, 78.9629); // India
+        const destinations = [{
+            lat: 37.77,
+            lon: -122.41,
+            img: 'https://i.ibb.co/mJ3PwJX/human1.png'
+        }, {
+            lat: 48.85,
+            lon: 2.35,
+            img: 'https://i.ibb.co/7R9jDpz/human2.png'
+        }, {
+            lat: 35.68,
+            lon: 139.69,
+            img: 'https://i.ibb.co/6wnL4Zn/human3.png'
+        }, {
+            lat: -33.86,
+            lon: 151.20,
+            img: 'https://i.ibb.co/0KQ3FKh/human4.png'
+        }, {
+            lat: 51.50,
+            lon: -0.12,
+            img: 'https://i.ibb.co/WzXPM8y/human5.png'
+        }, ];
+
+        const texLoader = new THREE.TextureLoader();
+        const humanIconUrl = 'https://i.ibb.co/tZ50dJv/human-icon.png';
+        const humanIconTexture = texLoader.load(humanIconUrl);
+
+        // --- Connection Creator ---
+        function createConnection(start, end) {
+            const mid = start.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(radius * 1.6);
+            const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+            const points = curve.getPoints(60);
+
+            const geo = new THREE.BufferGeometry().setFromPoints(points);
+            const mat = new THREE.LineBasicMaterial({
+                color: 0x8A2BE2,
+                transparent: true,
+                opacity: 0.7
+            });
+            globe.add(new THREE.Line(geo, mat));
+
+            // Human icons along arc
+            for (let i = 1; i <= 3; i++) {
+                const pointOnCurve = curve.getPointAt(i / 4);
+                const sprMat = new THREE.SpriteMaterial({
+                    map: humanIconTexture,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const sprite = new THREE.Sprite(sprMat);
+                sprite.position.copy(pointOnCurve);
+                sprite.scale.set(0.12, 0.12, 1);
+                globe.add(sprite);
+            }
+        }
+
+        // --- Build Network (from your file) ---
+        destinations.forEach(dest => {
+            const destVec = latLonToVec3(dest.lat, dest.lon);
+            createConnection(origin, destVec);
+            destinations.forEach(other => {
+                if (other !== dest) {
+                    const otherVec = latLonToVec3(other.lat, other.lon);
+                    createConnection(destVec, otherVec);
+                }
+            });
+            texLoader.load(dest.img, tex => {
+                const sprMat = new THREE.SpriteMaterial({
+                    map: tex,
+                    transparent: true
+                });
+                const sprite = new THREE.Sprite(sprMat);
+                sprite.position.copy(destVec);
+                sprite.scale.set(0.28, 0.28, 1);
+                globe.add(sprite);
+            });
+        });
+
+        // India marker
+        const indiaMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 8, 8),
+            new THREE.MeshBasicMaterial({
+                color: 0xffffff
+            })
+        );
+        indiaMarker.position.copy(origin);
+        globe.add(indiaMarker);
+
+        // --- NEW: Starfield ---
+        let stars;
+
+        function createStars() {
+            const starVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                const x = (Math.random() - 0.5) * 200;
+                const y = (Math.random() - 0.5) * 200;
+                const z = (Math.random() - 0.5) * 200;
+                if (x * x + y * y + z * z > 1000) {
+                    starVertices.push(x, y, z);
+                }
+            }
+
+            const starGeo = new THREE.BufferGeometry();
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+
+            const starMat = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            stars = new THREE.Points(starGeo, starMat);
+            scene.add(stars);
+        }
+        createStars();
+
+
+        // --- Animate ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            globe.rotation.y += 0.001;
+
+            if (stars) {
+                stars.rotation.y += 0.0002;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- Resize Handler ---
+        window.addEventListener('resize', () => {
+            width = container.clientWidth;
+            height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+
+</html>
